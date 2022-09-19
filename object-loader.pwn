@@ -24,7 +24,7 @@
 
 
 #undef MAX_PLAYERS
-#define MAX_PLAYERS (32)
+#define MAX_PLAYERS (175)
 
 #include <streamer>					// By Incognito:			http://forum.sa-mp.com/showthread.php?t=102865
 #include <sscanf2>					// By Y_Less:				http://forum.sa-mp.com/showthread.php?t=120356
@@ -68,11 +68,11 @@ enum
 
 enum E_REMOVE_DATA
 {
-		remove_Model,
-Float:	remove_PosX,
-Float:	remove_PosY,
-Float:	remove_PosZ,
-Float:	remove_Range
+	remove_Model,
+	Float:	remove_PosX,
+	Float:	remove_PosY,
+	Float:	remove_PosZ,
+	Float:	remove_Range
 }
 
 
@@ -198,7 +198,7 @@ LoadConfig()
 	return 1;
 }
 
-LoadMapsFromFolder(folder[])
+LoadMapsFromFolder(const folder[])
 {
 	new
 		foldername[256],
@@ -264,7 +264,7 @@ LoadMapsFromFolder(folder[])
 		print("DEBUG: [LoadMapsFromFolder] Finished reading directory.");
 }
 
-LoadMap(filename[])
+LoadMap(const filename[])
 {
 	new
 		File:file,

@@ -1,4 +1,6 @@
-# Southclaw's Simple Map Parser
+# My edited verion of Southclaw's Simple Map Parser for my server
+
+Just an up-to-date version of Southclaws original. Like const-correction.
 
 Loads .map files populated with CreateObject (or any variation) lines, supports materials and text.
 

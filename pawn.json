@@ -1,10 +1,12 @@
 {
-	"user": "Southclaws",
+	"user": "omcho",
 	"repo": "samp-object-loader",
 	"entry": "object-loader.pwn",
 	"output": "object-loader.amx",
 	"dependencies": [
 		"samp-incognito/samp-streamer-plugin",
-		"maddinat0r/sscanf"
+		"maddinat0r/sscanf",
+		"pawn-lang/samp-stdlib",
+		"JaTochNietDan/SA-MP-FileManager"
 	]
 }
