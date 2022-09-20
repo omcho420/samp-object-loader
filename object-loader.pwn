@@ -126,7 +126,7 @@ public OnFilterScriptInit()
 	LoadMapsFromFolder(DIRECTORY_MAPS);
 
 	// Yes a standard loop is required here.
-	for (new i; i < MAX_PLAYERS; i++)
+	for (new i = 0; i < MAX_PLAYERS; i++)
 	{
 		if (IsPlayerConnected(i))
 			RemoveObjects_OnLoad(i);
@@ -157,7 +157,7 @@ LoadConfig()
 
 		len = strlen(line);
 
-		for (new i; i < len; i++)
+		for (new i = 0; i < len; i++)
 		{
 			switch(line[i])
 			{
@@ -425,14 +425,14 @@ LoadMap(const filename[])
 
 				if (tmpObjRes == 0)
 				{
-					for (new i; i < sizeof(matSizeTable); i++)
+					for (new i = 0; i < sizeof(matSizeTable); i++)
 					{
 						if (strfind(tmpObjResName, matSizeTable[i]) != -1)
 							tmpObjRes = (i + 1) * 10;
 					}
 				}
 
-				for (new i; i < len; i++)
+				for (new i = 0; i < len; i++)
 				{
 					if (tmpObjText[i] == '\\' && i != len-1)
 					{
@@ -465,14 +465,14 @@ LoadMap(const filename[])
 
 				if (tmpObjRes == 0)
 				{
-					for (new i; i < sizeof(matSizeTable); i++)
+					for (new i = 0; i < sizeof(matSizeTable); i++)
 					{
 						if (strfind(tmpObjResName, matSizeTable[i]) != -1)
 							tmpObjRes = (i + 1) * 10;
 					}
 				}
 
-				for (new i; i < len; i++)
+				for (new i = 0; i < len; i++)
 				{
 					if (tmpObjText[i] == '\\' && i != len-1)
 					{
@@ -588,7 +588,7 @@ RemoveObjects_FirstLoad(playerid)
 	if (g_DebugLevel >= DEBUG_LEVEL_INFO)
 		printf("INFO: [RemoveObjects_FirstLoad] Created session data for %s", name);
 
-	for (new i; i < g_TotalObjectsToRemove; i++)
+	for (new i = 0; i < g_TotalObjectsToRemove; i++)
 	{
 		RemoveBuildingForPlayer(playerid,
 			g_ModelRemoveData[i][e_Model],
@@ -654,11 +654,11 @@ RemoveObjects_OnLoad(playerid)
 
 	file = fopen(filename, io_append);
 
-	for (new i; i < g_TotalObjectsToRemove; i++)
+	for (new i = 0; i < g_TotalObjectsToRemove; i++)
 	{
 		new skip;
 
-		for (new j; j < idx; j++)
+		for (new j = 0; j < idx; j++)
 		{
 			if (
 				_:g_ModelRemoveData[i][e_Model] == g_LoadedRemoveBuffer[playerid][j][0] &&
