@@ -68,11 +68,11 @@ enum
 
 enum E_REMOVE_DATA
 {
-	remove_Model,
-	Float:	remove_PosX,
-	Float:	remove_PosY,
-	Float:	remove_PosZ,
-	Float:	remove_Range
+	e_Model,
+	Float: e_PosX,
+	Float: e_PosY,
+	Float: e_PosZ,
+	Float: e_Range
 }
 
 
@@ -83,13 +83,11 @@ enum E_REMOVE_DATA
 ==============================================================================*/
 
 
-new
-		gDebugLevel = 0,
-		gTotalLoadedObjects,
-		gModelRemoveData[MAX_REMOVED_OBJECTS][E_REMOVE_DATA],
-		gLoadedRemoveBuffer[MAX_PLAYERS][MAX_REMOVED_OBJECTS][5],
-		gTotalObjectsToRemove;
-
+new g_DebugLevel = 0;
+new	g_TotalLoadedObjects;
+new	g_TotalObjectsToRemove;
+new	g_ModelRemoveData[MAX_REMOVED_OBJECTS][E_REMOVE_DATA];
+new	g_LoadedRemoveBuffer[MAX_PLAYERS][MAX_REMOVED_OBJECTS][5];
 
 /*==============================================================================
 
@@ -100,44 +98,44 @@ new
 
 public OnFilterScriptInit()
 {
-	if(!dir_exists(DIRECTORY_SCRIPTFILES))
+	if (!dir_exists(DIRECTORY_SCRIPTFILES))
 	{
 		print("ERROR: Directory '"DIRECTORY_SCRIPTFILES"' not found. Creating directory.");
 		dir_create(DIRECTORY_SCRIPTFILES);
 	}
 
-	if(!dir_exists(DIRECTORY_SCRIPTFILES DIRECTORY_MAPS))
+	if (!dir_exists(DIRECTORY_SCRIPTFILES DIRECTORY_MAPS))
 	{
 		print("ERROR: Directory '"DIRECTORY_SCRIPTFILES DIRECTORY_MAPS"' not found. Creating directory.");
 		dir_create(DIRECTORY_SCRIPTFILES DIRECTORY_MAPS);
 	}
 
-	if(!dir_exists(DIRECTORY_SCRIPTFILES DIRECTORY_MAPS DIRECTORY_SESSION))
+	if (!dir_exists(DIRECTORY_SCRIPTFILES DIRECTORY_MAPS DIRECTORY_SESSION))
 	{
 		print("ERROR: Directory '"DIRECTORY_SCRIPTFILES DIRECTORY_MAPS DIRECTORY_SESSION"' not found. Creating directory.");
 		dir_create(DIRECTORY_SCRIPTFILES DIRECTORY_MAPS DIRECTORY_SESSION);
 	}
 
 	// Load config if exists
-	if(fexist(CONFIG_FILE))
+	if (fexist(CONFIG_FILE))
 		LoadConfig();
 
-	if(gDebugLevel > DEBUG_LEVEL_NONE)
-		printf("INFO: [Init] Debug Level: %d", gDebugLevel);
+	if (g_DebugLevel > DEBUG_LEVEL_NONE)
+		printf("INFO: [Init] Debug Level: %d", g_DebugLevel);
 
 	LoadMapsFromFolder(DIRECTORY_MAPS);
 
 	// Yes a standard loop is required here.
-	for(new i; i < MAX_PLAYERS; i++)
+	for (new i; i < MAX_PLAYERS; i++)
 	{
-		if(IsPlayerConnected(i))
+		if (IsPlayerConnected(i))
 			RemoveObjects_OnLoad(i);
 	}
 
-	if(gDebugLevel >= DEBUG_LEVEL_INFO)
+	if (g_DebugLevel >= DEBUG_LEVEL_INFO)
 	{
-		printf("INFO: [Init] %d Total objects", gTotalLoadedObjects);
-		printf("INFO: [Init] %d Objects to remove", gTotalObjectsToRemove);
+		printf("INFO: [Init] %d Total objects", g_TotalLoadedObjects);
+		printf("INFO: [Init] %d Objects to remove", g_TotalObjectsToRemove);
 	}
 
 	return 1;
@@ -151,7 +149,7 @@ LoadConfig()
 
 	file = fopen(CONFIG_FILE, io_read);
 
-	if(file)
+	if (file)
 	{
 		new len;
 
@@ -159,7 +157,7 @@ LoadConfig()
 
 		len = strlen(line);
 
-		for(new i; i < len; i++)
+		for (new i; i < len; i++)
 		{
 			switch(line[i])
 			{
@@ -167,14 +165,14 @@ LoadConfig()
 					continue;
 			}
 
-			if(line[i] == 'd' && (i < len - 3))
+			if (line[i] == 'd' && (i < len - 3))
 			{
 				i++;
 
 				new val = line[i] - 48;
 
-				if(DEBUG_LEVEL_NONE < val <= DEBUG_LEVEL_LINES)
-					gDebugLevel = val;
+				if (DEBUG_LEVEL_NONE < val <= DEBUG_LEVEL_LINES)
+					g_DebugLevel = val;
 
 				continue;
 			}
@@ -210,24 +208,24 @@ LoadMapsFromFolder(const folder[])
 	format(foldername, sizeof(foldername), DIRECTORY_SCRIPTFILES"%s", folder);
 	dirhandle = dir_open(foldername);
 
-	if(gDebugLevel >= DEBUG_LEVEL_FOLDERS)
+	if (g_DebugLevel >= DEBUG_LEVEL_FOLDERS)
 	{
 		new
 			totalfiles,
 			totalmapfiles,
 			totalfolders;
 
-		while(dir_list(dirhandle, item, type))
+		while (dir_list(dirhandle, item, type))
 		{
-			if(type == FM_FILE)
+			if (type == FM_FILE)
 			{
 				totalfiles++;
 
-				if(!strcmp(item[strlen(item) - 4], ".map"))
+				if (!strcmp(item[strlen(item) - 4], ".map"))
 					totalmapfiles++;
 			}
 
-			if(type == FM_DIR && strcmp(item, "..") && strcmp(item, ".") && strcmp(item, "_"))
+			if (type == FM_DIR && strcmp(item, "..") && strcmp(item, ".") && strcmp(item, "_"))
 				totalfolders++;
 		}
 
@@ -238,11 +236,11 @@ LoadMapsFromFolder(const folder[])
 		printf("DEBUG: [LoadMapsFromFolder] Reading directory '%s': %d files, %d .map files, %d folders", foldername, totalfiles, totalmapfiles, totalfolders);
 	}
 
-	while(dir_list(dirhandle, item, type))
+	while (dir_list(dirhandle, item, type))
 	{
-		if(type == FM_FILE)
+		if (type == FM_FILE)
 		{
-			if(!strcmp(item[strlen(item) - 4], ".map"))
+			if (!strcmp(item[strlen(item) - 4], ".map"))
 			{
 				filename[0] = EOS;
 				format(filename, sizeof(filename), "%s%s", folder, item);
@@ -250,7 +248,7 @@ LoadMapsFromFolder(const folder[])
 			}
 		}
 
-		if(type == FM_DIR && strcmp(item, "..") && strcmp(item, ".") && strcmp(item, "_"))
+		if (type == FM_DIR && strcmp(item, "..") && strcmp(item, ".") && strcmp(item, "_"))
 		{
 			filename[0] = EOS;
 			format(filename, sizeof(filename), "%s%s/", folder, item);
@@ -260,7 +258,7 @@ LoadMapsFromFolder(const folder[])
 
 	dir_close(dirhandle);
 
-	if(gDebugLevel >= DEBUG_LEVEL_FOLDERS)
+	if (g_DebugLevel >= DEBUG_LEVEL_FOLDERS)
 		print("DEBUG: [LoadMapsFromFolder] Finished reading directory.");
 }
 
@@ -327,7 +325,7 @@ LoadMap(const filename[])
 			"512x512"
 		};
 
-	if(!fexist(filename))
+	if (!fexist(filename))
 	{
 		printf("ERROR: file: \"%s\" NOT FOUND", filename);
 		return 0;
@@ -335,17 +333,17 @@ LoadMap(const filename[])
 
 	file = fopen(filename, io_read);
 
-	if(!file)
+	if (!file)
 	{
 		printf("ERROR: file: \"%s\" NOT LOADED", filename);
 		return 0;
 	}
 
-	if(gDebugLevel >= DEBUG_LEVEL_FILES)
+	if (g_DebugLevel >= DEBUG_LEVEL_FILES)
 	{
 		new totallines;
 
-		while(fread(file, line))
+		while (fread(file, line))
 			totallines++;
 
 		// Reopen the file so the actual read code runs properly.
@@ -355,49 +353,49 @@ LoadMap(const filename[])
 		printf("\nDEBUG: [LoadMap] Reading file '%s': %d lines.", filename, totallines);
 	}
 
-	while(fread(file, line))
+	while (fread(file, line))
 	{
-		if(gDebugLevel == DEBUG_LEVEL_LINES)
+		if (g_DebugLevel == DEBUG_LEVEL_LINES)
 			print(line);
 
-		if(line[0] < 65)
+		if (line[0] < 65)
 		{
 			linenumber++;
 			continue;
 		}
 
-		if(sscanf(line, "p<(>s[32]p<)>s[256]{s[96]}", funcname, funcargs))
+		if (sscanf(line, "p<(>s[32]p<)>s[256]{s[96]}", funcname, funcargs))
 		{
 			linenumber++;
 			continue;
 		}
 
-		if(strfind(funcname, "=") != -1 && strfind(funcname, "Create") != -1) strdel(funcname, 0, strfind(funcname, "Create"));
-		if(!strcmp(funcname, "options", false))
+		if (strfind(funcname, "=") != -1 && strfind(funcname, "Create") != -1) strdel(funcname, 0, strfind(funcname, "Create"));
+		if (!strcmp(funcname, "options", false))
 		{
-			if(!sscanf(funcargs, "p<,>ddf", globalworld, globalinterior, globalrange))
+			if (!sscanf(funcargs, "p<,>ddf", globalworld, globalinterior, globalrange))
 			{
-				if(gDebugLevel >= DEBUG_LEVEL_DATA)
+				if (g_DebugLevel >= DEBUG_LEVEL_DATA)
 					printf(" DEBUG: [LoadMap] Updated options to: %d, %d, %f", globalworld, globalinterior, globalrange);
 
 				operations++;
 			}
 		}
 
-		if(!strcmp(funcname, "Create", false, 6)) // Scan for any function starting with 'Create', this covers CreateObject, CreateDynamicObject, CreateStreamedObject, etc.
+		if (!strcmp(funcname, "Create", false, 6)) // Scan for any function starting with 'Create', this covers CreateObject, CreateDynamicObject, CreateStreamedObject, etc.
 		{
-			if(!sscanf(funcargs, "p<,>dffffffD(-1)D(-1){D(-1)}F(-1.0)", modelid, posx, posy, posz, rotx, roty, rotz, world, interior, range))
+			if (!sscanf(funcargs, "p<,>dffffffD(-1)D(-1){D(-1)}F(-1.0)", modelid, posx, posy, posz, rotx, roty, rotz, world, interior, range))
 			{
-				if(world == -1)
+				if (world == -1)
 					world = globalworld;
 
-				if(interior == -1)
+				if (interior == -1)
 					interior = globalinterior;
 
-				if(range == -1.0)
+				if (range == -1.0)
 					range = globalrange;
 
-				if(gDebugLevel == DEBUG_LEVEL_DATA)
+				if (g_DebugLevel == DEBUG_LEVEL_DATA)
 				{
 					printf(" DEBUG: [LoadMap] Object: %d, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f (%d, %d, %f)",
 						modelid, posx, posy, posz, rotx, roty, rotz, world, interior, range);
@@ -405,17 +403,17 @@ LoadMap(const filename[])
 
 				tmpObjID = CreateDynamicObject(modelid, posx, posy, posz, rotx, roty, rotz, world, interior, -1, range + 100.0, range);
 
-				gTotalLoadedObjects++;
+				g_TotalLoadedObjects++;
 				objects++;
 				operations++;
 			}
 		}
 
-		if(!strcmp(funcname, "SetObjectMaterialText"))
+		if (!strcmp(funcname, "SetObjectMaterialText"))
 		{
-			if(!sscanf(funcargs, "p<,>{s[16]} p<\">{s[1]}s[128]p<,>{s[1]} d s[32] p<\">{s[1]}s[32]p<,>{s[1]} ddxxd", tmpObjText, tmpObjIdx, tmpObjResName, tmpObjFont, tmpObjFontSize, tmpObjBold, tmpObjFontCol, tmpObjBackCol, tmpObjAlign))
+			if (!sscanf(funcargs, "p<,>{s[16]} p<\">{s[1]}s[128]p<,>{s[1]} d s[32] p<\">{s[1]}s[32]p<,>{s[1]} ddxxd", tmpObjText, tmpObjIdx, tmpObjResName, tmpObjFont, tmpObjFontSize, tmpObjBold, tmpObjFontCol, tmpObjBackCol, tmpObjAlign))
 			{
-				if(gDebugLevel == DEBUG_LEVEL_DATA)
+				if (g_DebugLevel == DEBUG_LEVEL_DATA)
 				{
 					printf(" DEBUG: [LoadMap] Object Text: '%s', %d, '%s', '%s', %d, %d, %x, %x, %d",
 						tmpObjText, tmpObjIdx, tmpObjResName, tmpObjFont, tmpObjFontSize, tmpObjBold, tmpObjFontCol, tmpObjBackCol, tmpObjAlign);
@@ -425,20 +423,20 @@ LoadMap(const filename[])
 
 				tmpObjRes = strval(tmpObjResName[0]);
 
-				if(tmpObjRes == 0)
+				if (tmpObjRes == 0)
 				{
-					for(new i; i < sizeof(matSizeTable); i++)
+					for (new i; i < sizeof(matSizeTable); i++)
 					{
-						if(strfind(tmpObjResName, matSizeTable[i]) != -1)
+						if (strfind(tmpObjResName, matSizeTable[i]) != -1)
 							tmpObjRes = (i + 1) * 10;
 					}
 				}
 
-				for(new i; i < len; i++)
+				for (new i; i < len; i++)
 				{
-					if(tmpObjText[i] == '\\' && i != len-1)
+					if (tmpObjText[i] == '\\' && i != len-1)
 					{
-						if(tmpObjText[i+1] == 'n')
+						if (tmpObjText[i+1] == 'n')
 						{
 							strdel(tmpObjText, i, i+1);
 							tmpObjText[i] = '\n';
@@ -451,11 +449,11 @@ LoadMap(const filename[])
 			}
 		}
 
-		if(!strcmp(funcname, "SetDynamicObjectMaterialText"))
+		if (!strcmp(funcname, "SetDynamicObjectMaterialText"))
 		{
-			if(!sscanf(funcargs, "p<,>{s[32]} d p<\">{s[2]}s[128]p<,>{s[2]} s[32] p<\">{s[2]}s[32]p<,>{s[2]} ddxxd", tmpObjIdx, tmpObjText, tmpObjResName, tmpObjFont, tmpObjFontSize, tmpObjBold, tmpObjFontCol, tmpObjBackCol, tmpObjAlign))
+			if (!sscanf(funcargs, "p<,>{s[32]} d p<\">{s[2]}s[128]p<,>{s[2]} s[32] p<\">{s[2]}s[32]p<,>{s[2]} ddxxd", tmpObjIdx, tmpObjText, tmpObjResName, tmpObjFont, tmpObjFontSize, tmpObjBold, tmpObjFontCol, tmpObjBackCol, tmpObjAlign))
 			{
-				if(gDebugLevel == DEBUG_LEVEL_DATA)
+				if (g_DebugLevel == DEBUG_LEVEL_DATA)
 				{
 					printf(" DEBUG: [LoadMap] Object Text: '%s', %d, '%s', '%s', %d, %d, %x, %x, %d",
 						tmpObjText, tmpObjIdx, tmpObjResName, tmpObjFont, tmpObjFontSize, tmpObjBold, tmpObjFontCol, tmpObjBackCol, tmpObjAlign);
@@ -465,20 +463,20 @@ LoadMap(const filename[])
 
 				tmpObjRes = strval(tmpObjResName[0]);
 
-				if(tmpObjRes == 0)
+				if (tmpObjRes == 0)
 				{
-					for(new i; i < sizeof(matSizeTable); i++)
+					for (new i; i < sizeof(matSizeTable); i++)
 					{
-						if(strfind(tmpObjResName, matSizeTable[i]) != -1)
+						if (strfind(tmpObjResName, matSizeTable[i]) != -1)
 							tmpObjRes = (i + 1) * 10;
 					}
 				}
 
-				for(new i; i < len; i++)
+				for (new i; i < len; i++)
 				{
-					if(tmpObjText[i] == '\\' && i != len-1)
+					if (tmpObjText[i] == '\\' && i != len-1)
 					{
-						if(tmpObjText[i+1] == 'n')
+						if (tmpObjText[i+1] == 'n')
 						{
 							strdel(tmpObjText, i, i+1);
 							tmpObjText[i] = '\n';
@@ -491,11 +489,11 @@ LoadMap(const filename[])
 			}
 		}
 
-		if(!strcmp(funcname, "SetObjectMaterial") || !strcmp(funcname, "SetDynamicObjectMaterial"))
+		if (!strcmp(funcname, "SetObjectMaterial") || !strcmp(funcname, "SetDynamicObjectMaterial"))
 		{
-			if(!sscanf(funcargs, "p<,>{s[16]}dd p<\">{s[1]}s[32]p<,>{s[1]} p<\">{s[1]}s[32]p<,>{s[1]} x", tmpObjIdx, tmpObjMod, tmpObjTxd, tmpObjTex, tmpObjMatCol))
+			if (!sscanf(funcargs, "p<,>{s[16]}dd p<\">{s[1]}s[32]p<,>{s[1]} p<\">{s[1]}s[32]p<,>{s[1]} x", tmpObjIdx, tmpObjMod, tmpObjTxd, tmpObjTex, tmpObjMatCol))
 			{
-				if(gDebugLevel == DEBUG_LEVEL_DATA)
+				if (g_DebugLevel == DEBUG_LEVEL_DATA)
 				{
 					printf(" DEBUG: [LoadMap] Object Material: %d, %d, '%s', '%s', %x",
 						tmpObjIdx, tmpObjMod, tmpObjTxd, tmpObjTex, tmpObjMatCol);
@@ -506,25 +504,25 @@ LoadMap(const filename[])
 			}
 		}
 
-		if(!strcmp(funcname, "RemoveBuildingForPlayer"))
+		if (!strcmp(funcname, "RemoveBuildingForPlayer"))
 		{
-			if(gTotalObjectsToRemove < MAX_REMOVED_OBJECTS)
+			if (g_TotalObjectsToRemove < MAX_REMOVED_OBJECTS)
 			{
-				if(!sscanf(funcargs, "p<,>{s[16]}dffff", modelid, posx, posy, posz, range))
+				if (!sscanf(funcargs, "p<,>{s[16]}dffff", modelid, posx, posy, posz, range))
 				{
-					if(gDebugLevel == DEBUG_LEVEL_DATA)
+					if (g_DebugLevel == DEBUG_LEVEL_DATA)
 					{
 						printf(" DEBUG: [LoadMap] Removal: %d, %.2f, %.2f, %.2f, %.2f",
 							modelid, posx, posy, posz, range);
 					}
 			
-					gModelRemoveData[gTotalObjectsToRemove][remove_Model] = modelid;
-					gModelRemoveData[gTotalObjectsToRemove][remove_PosX] = posx;
-					gModelRemoveData[gTotalObjectsToRemove][remove_PosY] = posy;
-					gModelRemoveData[gTotalObjectsToRemove][remove_PosZ] = posz;
-					gModelRemoveData[gTotalObjectsToRemove][remove_Range] = range;
+					g_ModelRemoveData[g_TotalObjectsToRemove][e_Model] = modelid;
+					g_ModelRemoveData[g_TotalObjectsToRemove][e_PosX] = posx;
+					g_ModelRemoveData[g_TotalObjectsToRemove][e_PosY] = posy;
+					g_ModelRemoveData[g_TotalObjectsToRemove][e_PosZ] = posz;
+					g_ModelRemoveData[g_TotalObjectsToRemove][e_Range] = range;
 			
-					gTotalObjectsToRemove++;
+					g_TotalObjectsToRemove++;
 					operations++;
 				}
 			}
@@ -539,7 +537,7 @@ LoadMap(const filename[])
 
 	fclose(file);
 
-	if(gDebugLevel >= DEBUG_LEVEL_FILES)
+	if (g_DebugLevel >= DEBUG_LEVEL_FILES)
 		printf("DEBUG: [LoadMap] Finished reading file. %d objects loaded from %d lines, %d total operations.", objects, linenumber, operations);
 
 	return linenumber;
@@ -562,7 +560,7 @@ public OnPlayerDisconnect(playerid, reason)
 
 	format(filename, sizeof(filename), DIRECTORY_MAPS DIRECTORY_SESSION"%s.dat", name);
 
-	if(gDebugLevel >= DEBUG_LEVEL_INFO)
+	if (g_DebugLevel >= DEBUG_LEVEL_INFO)
 		printf("INFO: [OnPlayerDisconnect] Removing session data file for %s", name);
 
 	fremove(filename);
@@ -584,31 +582,31 @@ RemoveObjects_FirstLoad(playerid)
 
 	file = fopen(filename, io_write);
 
-	if(!file)
+	if (!file)
 		printf("ERROR: [RemoveObjects_FirstLoad] Opening file '%s' for write.", filename);
 
-	if(gDebugLevel >= DEBUG_LEVEL_INFO)
+	if (g_DebugLevel >= DEBUG_LEVEL_INFO)
 		printf("INFO: [RemoveObjects_FirstLoad] Created session data for %s", name);
 
-	for(new i; i < gTotalObjectsToRemove; i++)
+	for (new i; i < g_TotalObjectsToRemove; i++)
 	{
 		RemoveBuildingForPlayer(playerid,
-			gModelRemoveData[i][remove_Model],
-			gModelRemoveData[i][remove_PosX],
-			gModelRemoveData[i][remove_PosY],
-			gModelRemoveData[i][remove_PosZ],
-			gModelRemoveData[i][remove_Range]);
+			g_ModelRemoveData[i][e_Model],
+			g_ModelRemoveData[i][e_PosX],
+			g_ModelRemoveData[i][e_PosY],
+			g_ModelRemoveData[i][e_PosZ],
+			g_ModelRemoveData[i][e_Range]);
 
 		// Build a list of removed objects for checking against when the script is
 		// reloaded. This way, the reload function isn't called unnecessarily.
 
-		buffer[0] = gModelRemoveData[i][remove_Model];
-		buffer[1] = _:gModelRemoveData[i][remove_PosX];
-		buffer[2] = _:gModelRemoveData[i][remove_PosY];
-		buffer[3] = _:gModelRemoveData[i][remove_PosZ];
-		buffer[4] = _:gModelRemoveData[i][remove_Range];
+		buffer[0] = g_ModelRemoveData[i][e_Model];
+		buffer[1] = _:g_ModelRemoveData[i][e_PosX];
+		buffer[2] = _:g_ModelRemoveData[i][e_PosY];
+		buffer[3] = _:g_ModelRemoveData[i][e_PosZ];
+		buffer[4] = _:g_ModelRemoveData[i][e_Range];
 
-		if(gDebugLevel >= DEBUG_LEVEL_DATA)
+		if (g_DebugLevel >= DEBUG_LEVEL_DATA)
 			printf("INFO: [RemoveObjects_FirstLoad] Write: [%x.%x.%x.%x.%x]", buffer[0], buffer[1], buffer[2], buffer[3], buffer[4]);
 
 		fblockwrite(file, buffer);
@@ -632,9 +630,9 @@ RemoveObjects_OnLoad(playerid)
 
 	format(filename, sizeof(filename), DIRECTORY_MAPS DIRECTORY_SESSION"%s.dat", name);
 
-	if(!fexist(filename))
+	if (!fexist(filename))
 	{
-		if(gDebugLevel >= DEBUG_LEVEL_INFO)
+		if (g_DebugLevel >= DEBUG_LEVEL_INFO)
 			printf("INFO: [RemoveObjects_OnLoad] Session data for %s doesn't exist, running firstload.", name);
 
 		RemoveObjects_FirstLoad(playerid);
@@ -644,63 +642,63 @@ RemoveObjects_OnLoad(playerid)
 
 	file = fopen(filename, io_read);
 
-	if(gDebugLevel >= DEBUG_LEVEL_INFO)
+	if (g_DebugLevel >= DEBUG_LEVEL_INFO)
 		printf("INFO: [RemoveObjects_OnLoad] Loading removals for %s", name);
 
 	// Build a list of existing removed objects for this player
 
-	while(fblockread(file, gLoadedRemoveBuffer[playerid][idx], 5))
+	while (fblockread(file, g_LoadedRemoveBuffer[playerid][idx], 5))
 		idx++;
 
 	fclose(file);
 
 	file = fopen(filename, io_append);
 
-	for(new i; i < gTotalObjectsToRemove; i++)
+	for (new i; i < g_TotalObjectsToRemove; i++)
 	{
 		new skip;
 
-		for(new j; j < idx; j++)
+		for (new j; j < idx; j++)
 		{
-			if(
-				_:gModelRemoveData[i][remove_Model] == gLoadedRemoveBuffer[playerid][j][0] &&
-				_:gModelRemoveData[i][remove_PosX] == gLoadedRemoveBuffer[playerid][j][1] &&
-				_:gModelRemoveData[i][remove_PosY] == gLoadedRemoveBuffer[playerid][j][2] &&
-				_:gModelRemoveData[i][remove_PosZ] == gLoadedRemoveBuffer[playerid][j][3] &&
-				_:gModelRemoveData[i][remove_Range] == gLoadedRemoveBuffer[playerid][j][4])
+			if (
+				_:g_ModelRemoveData[i][e_Model] == g_LoadedRemoveBuffer[playerid][j][0] &&
+				_:g_ModelRemoveData[i][e_PosX] == g_LoadedRemoveBuffer[playerid][j][1] &&
+				_:g_ModelRemoveData[i][e_PosY] == g_LoadedRemoveBuffer[playerid][j][2] &&
+				_:g_ModelRemoveData[i][e_PosZ] == g_LoadedRemoveBuffer[playerid][j][3] &&
+				_:g_ModelRemoveData[i][e_Range] == g_LoadedRemoveBuffer[playerid][j][4])
 			{
 				skip = true;
 				break;
 			}
 		}
 
-		if(skip)
+		if (skip)
 		{
-			if(gDebugLevel == DEBUG_LEVEL_DATA)
-				printf(" DEBUG: [RemoveObjects_OnLoad] Skipping object removal %d (model: %d)", i, gModelRemoveData[i][remove_Model]);
+			if (g_DebugLevel == DEBUG_LEVEL_DATA)
+				printf(" DEBUG: [RemoveObjects_OnLoad] Skipping object removal %d (model: %d)", i, g_ModelRemoveData[i][e_Model]);
 
 			continue;
 		}
 
-		if(gDebugLevel == DEBUG_LEVEL_DATA)
-			printf(" DEBUG: [RemoveObjects_OnLoad] Removing object %d (model: %d)", i, gModelRemoveData[i][remove_Model]);
+		if (g_DebugLevel == DEBUG_LEVEL_DATA)
+			printf(" DEBUG: [RemoveObjects_OnLoad] Removing object %d (model: %d)", i, g_ModelRemoveData[i][e_Model]);
 
 		RemoveBuildingForPlayer(playerid,
-			gModelRemoveData[i][remove_Model],
-			gModelRemoveData[i][remove_PosX],
-			gModelRemoveData[i][remove_PosY],
-			gModelRemoveData[i][remove_PosZ],
-			gModelRemoveData[i][remove_Range]);
+			g_ModelRemoveData[i][e_Model],
+			g_ModelRemoveData[i][e_PosX],
+			g_ModelRemoveData[i][e_PosY],
+			g_ModelRemoveData[i][e_PosZ],
+			g_ModelRemoveData[i][e_Range]);
 
 		// This object is new, append it to the player's session data file.
 
-		buffer[0] = gModelRemoveData[i][remove_Model];
-		buffer[1] = _:gModelRemoveData[i][remove_PosX];
-		buffer[2] = _:gModelRemoveData[i][remove_PosY];
-		buffer[3] = _:gModelRemoveData[i][remove_PosZ];
-		buffer[4] = _:gModelRemoveData[i][remove_Range];
+		buffer[0] = g_ModelRemoveData[i][e_Model];
+		buffer[1] = _:g_ModelRemoveData[i][e_PosX];
+		buffer[2] = _:g_ModelRemoveData[i][e_PosY];
+		buffer[3] = _:g_ModelRemoveData[i][e_PosZ];
+		buffer[4] = _:g_ModelRemoveData[i][e_Range];
 
-		if(gDebugLevel >= DEBUG_LEVEL_DATA)
+		if (g_DebugLevel >= DEBUG_LEVEL_DATA)
 			printf("INFO: [RemoveObjects_OnLoad] Append: [%x.%x.%x.%x.%x]", buffer[0], buffer[1], buffer[2], buffer[3], buffer[4]);
 
 		fblockwrite(file, buffer);
