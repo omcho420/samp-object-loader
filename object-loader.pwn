@@ -10,34 +10,34 @@
 
 ==============================================================================*/
 
+// built-in include guard removal
+// just in case the user has a local dependency with the same file name
+#if defined _inc_object_loader
+	#undef _inc_object_loader
+#endif
 
-#define FILTERSCRIPT
+// custom include-guard to ensure we don't duplicate
+#if defined _object_loader_included
+	#endinput
+#endif
+#define _object_loader_included
 
+/*
+ * External Dependencies
+ *
+ */
 #include <a_samp>
-
-
-/*==============================================================================
-
-	Predefinitions and External Dependencies
-
-==============================================================================*/
-
-
-#undef MAX_PLAYERS
-#define MAX_PLAYERS (175)
 
 #include <streamer>					// By Incognito:			http://forum.sa-mp.com/showthread.php?t=102865
 #include <sscanf2>					// By Y_Less:				http://forum.sa-mp.com/showthread.php?t=120356
 #include <FileManager>				// By JaTochNietDan:		http://forum.sa-mp.com/showthread.php?t=92246
 
+#include <YSI_Coding\y_hooks>
 
-/*==============================================================================
-
-	Constants
-
-==============================================================================*/
-
-
+/*
+ * Constants
+ *
+ */
 #define DIRECTORY_SCRIPTFILES	"./scriptfiles/"
 #define DIRECTORY_MAPS			"Maps/"
 #define DIRECTORY_SESSION		"session/"
@@ -48,14 +48,10 @@
 #define MAX_MATERIAL_LEN		(8)
 #define SESSION_NAME_LEN		(40)
 
-
-/*==============================================================================
-
-	Debug levels
-
-==============================================================================*/
-
-
+/*
+ * Enumators
+ *
+ */
 enum
 {
 	DEBUG_LEVEL_NONE = -1,	// (-1) No prints
@@ -75,28 +71,21 @@ enum E_REMOVE_DATA
 	Float: e_Range
 }
 
+/*
+ * Variables
+ *
+ */
+static g_DebugLevel = 0;
+static g_TotalLoadedObjects;
+static g_TotalObjectsToRemove;
+static g_ModelRemoveData[MAX_REMOVED_OBJECTS][E_REMOVE_DATA];
+static g_LoadedRemoveBuffer[MAX_PLAYERS][MAX_REMOVED_OBJECTS][5];
 
-/*==============================================================================
-
-	Variables
-
-==============================================================================*/
-
-
-new g_DebugLevel = 0;
-new	g_TotalLoadedObjects;
-new	g_TotalObjectsToRemove;
-new	g_ModelRemoveData[MAX_REMOVED_OBJECTS][E_REMOVE_DATA];
-new	g_LoadedRemoveBuffer[MAX_PLAYERS][MAX_REMOVED_OBJECTS][5];
-
-/*==============================================================================
-
-	Core
-
-==============================================================================*/
-
-
-public OnFilterScriptInit()
+/*
+ * Hooks
+ *
+ */
+hook OnGameModeInit()
 {
 	if (!dir_exists(DIRECTORY_SCRIPTFILES))
 	{
@@ -138,10 +127,39 @@ public OnFilterScriptInit()
 		printf("INFO: [Init] %d Objects to remove", g_TotalObjectsToRemove);
 	}
 
-	return 1;
+	return Y_HOOKS_CONTINUE_RETURN_1;
 }
 
-LoadConfig()
+hook OnPlayerConnect(playerid)
+{
+	RemoveObjects_FirstLoad(playerid);
+
+	return Y_HOOKS_CONTINUE_RETURN_1;
+}
+
+hook OnPlayerDisconnect(playerid, reason)
+{
+	new
+		name[MAX_PLAYER_NAME],
+		filename[SESSION_NAME_LEN];
+
+	GetPlayerName(playerid, name, MAX_PLAYER_NAME);
+
+	format(filename, sizeof(filename), DIRECTORY_MAPS DIRECTORY_SESSION"%s.dat", name);
+
+	if (g_DebugLevel >= DEBUG_LEVEL_INFO)
+		printf("INFO: [OnPlayerDisconnect] Removing session data file for %s", name);
+
+	fremove(filename);
+
+	return Y_HOOKS_CONTINUE_RETURN_1;
+}
+
+/*
+ * Functions
+ *
+ */
+stock LoadConfig()
 {
 	new
 		File:file,
@@ -196,7 +214,7 @@ LoadConfig()
 	return 1;
 }
 
-LoadMapsFromFolder(const folder[])
+stock LoadMapsFromFolder(const folder[])
 {
 	new
 		foldername[256],
@@ -262,7 +280,7 @@ LoadMapsFromFolder(const folder[])
 		print("DEBUG: [LoadMapsFromFolder] Finished reading directory.");
 }
 
-LoadMap(const filename[])
+stock LoadMap(const filename[])
 {
 	new
 		File:file,
@@ -543,32 +561,11 @@ LoadMap(const filename[])
 	return linenumber;
 }
 
-public OnPlayerConnect(playerid)
-{
-	RemoveObjects_FirstLoad(playerid);
-
-	return 1;
-}
-
-public OnPlayerDisconnect(playerid, reason)
-{
-	new
-		name[MAX_PLAYER_NAME],
-		filename[SESSION_NAME_LEN];
-
-	GetPlayerName(playerid, name, MAX_PLAYER_NAME);
-
-	format(filename, sizeof(filename), DIRECTORY_MAPS DIRECTORY_SESSION"%s.dat", name);
-
-	if (g_DebugLevel >= DEBUG_LEVEL_INFO)
-		printf("INFO: [OnPlayerDisconnect] Removing session data file for %s", name);
-
-	fremove(filename);
-
-	return 1;
-}
-
-RemoveObjects_FirstLoad(playerid)
+/*
+ * Internal Functions
+ *
+ */
+static RemoveObjects_FirstLoad(playerid)
 {
 	new
 		File:file,
@@ -617,7 +614,7 @@ RemoveObjects_FirstLoad(playerid)
 	return 1;
 }
 
-RemoveObjects_OnLoad(playerid)
+static RemoveObjects_OnLoad(playerid)
 {
 	new
 		File:file,
