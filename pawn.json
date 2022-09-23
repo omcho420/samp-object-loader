@@ -1,7 +1,7 @@
 {
 	"user": "Southclaws",
 	"repo": "samp-object-loader",
-	"contributors": ["Southclaws", "omcho420"],
+	"contributors": ["Southclaws", "TommyB123", "omcho420"],
 	"dependencies": [
 		"pawn-lang/YSI-Includes",
 		"pawn-lang/samp-stdlib",
