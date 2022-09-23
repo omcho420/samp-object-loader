@@ -1,12 +1,12 @@
 {
-	"user": "Suthclaws",
+	"user": "Southclaws",
 	"repo": "samp-object-loader",
-	"entry": "object-loader.pwn",
-	"output": "object-loader.amx",
+	"contributors": ["Southclaws", "omcho420"],
 	"dependencies": [
+		"pawn-lang/YSI-Includes",
+		"pawn-lang/samp-stdlib",
 		"samp-incognito/samp-streamer-plugin",
 		"Y-Less/sscanf",
-		"pawn-lang/samp-stdlib",
 		"JaTochNietDan/SA-MP-FileManager"
 	]
 }
