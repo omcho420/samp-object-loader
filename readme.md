@@ -1,4 +1,4 @@
-# My edited verion of Southclaw's Simple Map Parser for my server
+# My updated verion of Southclaw's Simple Map Parser for my server
 
 Just an up-to-date version of Southclaws original. Like const-correction.
 
