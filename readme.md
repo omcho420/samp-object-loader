@@ -11,7 +11,7 @@ Default load directory: `./scriptfiles/Maps/`
 Simply install to your project:
 
 ```bash
-sampctl package install Southclaws/samp-object-loader
+sampctl package install omcho420/samp-object-loader
 ```
 
 Include in your code and begin using the library:
